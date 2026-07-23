@@ -160,8 +160,13 @@ def list_documents() -> str:
 @mcp.tool()
 def list_database_schema() -> str:
     """
-    Lista todas as tabelas e VIEWS disponíveis no banco de dados seguros.db, 
+    Lista todas as tabelas e VIEWS disponíveis no banco de dados seguros.db,
     exibindo os comandos DDL (CREATE TABLE/VIEW) de cada uma.
+
+    O banco segue arquitetura Medallion: bronze_* e stg_* são camadas brutas/internas
+    de ingestão e staging (dado sujo, sem tratamento). Para responder perguntas de
+    negócio, prefira sempre silver_* e as views vw_* — já vêm tratadas, deduplicadas
+    e com inconsistências sinalizadas (prefixo 'INCOSISTENTE: ...' nos campos).
     """
     if not DB_PATH.exists():
         return f"Erro: Banco de dados não encontrado em '{DB_PATH}'."
@@ -198,6 +203,9 @@ def run_sql_query(query: str) -> str:
     """
     Executa uma consulta SQL (SELECT) de leitura no banco seguros.db.
     Pode consultar tanto tabelas físicas quanto views (ex: vw_gold_kpi_sinistralidade).
+
+    Para perguntas de negócio, use silver_* e vw_* (dado tratado e sinalizado).
+    Só consulte bronze_*/stg_* se a pergunta for especificamente sobre dado bruto/lineage.
     """
     if not DB_PATH.exists():
         return f"Erro: Banco de dados não encontrado em '{DB_PATH}'."
