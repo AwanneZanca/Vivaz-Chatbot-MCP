@@ -20,15 +20,17 @@ cruzar as duas sem que ninguém precise dizer onde procurar:
 
 ```mermaid
 flowchart LR
-    subgraph Fontes
-        PDF[PDFs<br/>condições gerais / manual]
-        DB[(seguros.db<br/>Medallion Bronze→Silver→Gold)]
+    subgraph Fontes [Fontes]
+        PDF[PDFs - condicoes gerais e manual]
+        DB[seguros.db - Medallion Bronze a Gold]
     end
-    subgraph MCP["mcp-server (MCP)"]
-        RAG[RAG local<br/>sentence-transformers]
-        SQL[Consulta SQL<br/>leitura]
+
+    subgraph MCP [mcp-server]
+        RAG[RAG local - sentence-transformers]
+        SQL[Consulta SQL - leitura]
     end
-    Agente[Agente de IA<br/>Claude / Cline]
+
+    Agente[Agente de IA - Claude ou Cline]
 
     PDF --> RAG
     DB --> SQL
