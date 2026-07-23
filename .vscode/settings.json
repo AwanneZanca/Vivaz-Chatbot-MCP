@@ -1,0 +1,12 @@
+{
+    "python.defaultInterpreterPath": "${workspaceFolder:Vivaz_Chatbot}/mcp-server/.venv/Scripts/python.exe",
+    "sqltools.useNodeRuntime": true,
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "driver": "SQLite",
+            "name": "Insurtech_DB",
+            "database": "${workspaceFolder:Vivaz_Chatbot}/data-pipeline/seguros.db"
+        }
+    ]
+}

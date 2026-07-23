@@ -1,5 +1,7 @@
-__pycache__/
+mcp-server/__pycache__/
+mcp-server/**/__pycache__/
 *.pyc
-.venv/
-venv/
-data/index/
+mcp-server/.venv/
+mcp-server/venv/
+mcp-server/data/index/
+data-pipeline/*.bak
