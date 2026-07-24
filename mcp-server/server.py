@@ -40,14 +40,24 @@ CHUNK_OVERLAP = 150
 mcp = FastMCP("insurtech-rag-sql")
 _model = None
 
-# Log vai para stderr, nunca stdout: o transporte stdio do MCP usa stdout
-# para o protocolo JSON-RPC, e qualquer texto solto ali quebra o cliente.
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s [%(levelname)s] %(message)s",
-    stream=sys.stderr,
-)
+# Log vai para stderr e para um arquivo, nunca stdout: o transporte stdio do
+# MCP usa stdout para o protocolo JSON-RPC, e qualquer texto solto ali quebra
+# o cliente. O arquivo existe porque nem todo cliente MCP (ex: Cline) expõe
+# o stderr do subprocesso numa interface visivel -- assim sempre da pra abrir
+# server.log e ver o historico, independente de como o servidor foi lancado.
+#
+# Configuramos o logger nomeado diretamente (em vez de logging.basicConfig)
+# porque o FastMCP(...) abaixo ja anexa um RichHandler ao logger raiz na
+# propria instanciacao -- basicConfig() e um no-op se o raiz ja tem handler,
+# entao nosso FileHandler seria silenciosamente ignorado.
+LOG_PATH = BASE_DIR / "server.log"
 logger = logging.getLogger("insurtech-rag-sql")
+logger.setLevel(logging.INFO)
+logger.propagate = False  # evita duplicar a mensagem via o RichHandler do raiz
+_log_formatter = logging.Formatter("%(asctime)s [%(levelname)s] %(message)s")
+for _handler in (logging.StreamHandler(sys.stderr), logging.FileHandler(LOG_PATH, encoding="utf-8")):
+    _handler.setFormatter(_log_formatter)
+    logger.addHandler(_handler)
 # endregion
 
 # region [3] Funções Auxiliares (Lazy Loading e Storage)

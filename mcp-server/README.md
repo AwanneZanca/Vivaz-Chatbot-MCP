@@ -92,4 +92,6 @@ Roda automaticamente a cada push via GitHub Actions ([`.github/workflows/ci.yml`
 
 ## Observabilidade
 
-Cada chamada de tool é logada em `stderr` (nunca `stdout`, que é reservado pelo protocolo MCP via stdio) com nome, argumentos, duração e tamanho da resposta — útil para depurar quais ferramentas o agente está chamando e quanto tempo cada uma leva.
+Cada chamada de tool é logada com nome, argumentos, duração e tamanho da resposta, em dois lugares:
+- `stderr` do processo (nunca `stdout`, que é reservado pelo protocolo MCP via stdio) — visível se você rodar `mcp dev server.py` ou o `server.py` direto no terminal.
+- `mcp-server/server.log` — arquivo local (não versionado), pra quando o servidor é iniciado por um cliente MCP (ex: Cline) que não exibe o `stderr` do subprocesso em nenhuma interface visível. Sempre dá pra abrir esse arquivo depois pra ver o histórico completo.

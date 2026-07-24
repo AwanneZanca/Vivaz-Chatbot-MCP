@@ -4,4 +4,5 @@ mcp-server/**/__pycache__/
 mcp-server/.venv/
 mcp-server/venv/
 mcp-server/data/index/
+mcp-server/server.log
 data-pipeline/*.bak
