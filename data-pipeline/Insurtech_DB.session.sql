@@ -61,7 +61,7 @@ SELECT
     END AS data_aviso,
     CASE
         WHEN valor_pago < 0 THEN 'INCOSISTENTE: VALOR PAGO NEGATIVO'
-        WHEN LOWER(TRIM(status_sinistro)) = 'pago'  AND valor_pago <= 1 THEN 'INCOSISTENTE: PAGO COM VALOR PAGO <= 1'
+        WHEN LOWER(TRIM(status_sinistro)) = 'pago'  AND (valor_pago IS NULL OR valor_pago <= 1) THEN 'INCOSISTENTE: PAGO COM VALOR PAGO <= 1'
         WHEN LOWER(TRIM(status_sinistro)) != 'pago' AND valor_pago >  1 THEN 'INCOSISTENTE: NAO PAGO COM VALOR PAGO > 1'
         WHEN LOWER(TRIM(status_sinistro)) = 'em_analise' THEN 'EM ANALISE'
         WHEN LOWER(TRIM(status_sinistro)) = 'aberto'     THEN 'ABERTO'

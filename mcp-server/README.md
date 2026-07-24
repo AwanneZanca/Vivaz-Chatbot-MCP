@@ -76,3 +76,20 @@ Exemplos:
 
 O `seguros.db` segue a arquitetura Medallion (ver [`../data-pipeline/README.md`](../data-pipeline/README.md)):
 Bronze (raw) → Staging (`stg_*`, validação referencial) → Silver (tratado/deduplicado) → Gold (views de KPI).
+
+## Testes
+
+```bash
+pip install -r requirements-dev.txt
+pytest -v
+```
+
+Dois níveis de teste:
+- `tests/test_server_tools.py` — comportamento das tools (bloqueio de escrita SQL, chunking, respostas sem índice carregado).
+- `tests/test_data_quality.py` — invariantes de qualidade de dado direto no `seguros.db` (nenhum `NULL`/valor negativo escapa sem ser sinalizado como `INCOSISTENTE:`, KPIs da camada Gold nunca incluem dado inconsistente).
+
+Roda automaticamente a cada push via GitHub Actions ([`.github/workflows/ci.yml`](../.github/workflows/ci.yml)).
+
+## Observabilidade
+
+Cada chamada de tool é logada em `stderr` (nunca `stdout`, que é reservado pelo protocolo MCP via stdio) com nome, argumentos, duração e tamanho da resposta — útil para depurar quais ferramentas o agente está chamando e quanto tempo cada uma leva.

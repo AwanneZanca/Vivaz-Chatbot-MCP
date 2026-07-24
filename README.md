@@ -59,7 +59,7 @@ Veja o README de cada pasta para detalhes de setup, tools expostas e como rodar 
 
 ## Stack
 
-Python · SQLite · MCP (Model Context Protocol) · sentence-transformers (embeddings locais) · pypdf
+Python · SQLite · MCP (Model Context Protocol) · sentence-transformers (embeddings locais) · pypdf · pytest · GitHub Actions
 
 ---
 

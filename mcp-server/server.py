@@ -4,9 +4,12 @@ Servidor MCP que expõe ferramentas de RAG (PDFs) e Consultas SQL (SQLite).
 
 # region [1] Imports e Configurações de Ambiente
 import json
+import logging
 import os
 import sqlite3
 import sys
+import time
+from functools import wraps
 from pathlib import Path
 
 # Configurações de variáveis de ambiente para evitar congelamentos no Windows
@@ -36,6 +39,15 @@ CHUNK_OVERLAP = 150
 # Inicialização do servidor MCP
 mcp = FastMCP("insurtech-rag-sql")
 _model = None
+
+# Log vai para stderr, nunca stdout: o transporte stdio do MCP usa stdout
+# para o protocolo JSON-RPC, e qualquer texto solto ali quebra o cliente.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+    stream=sys.stderr,
+)
+logger = logging.getLogger("insurtech-rag-sql")
 # endregion
 
 # region [3] Funções Auxiliares (Lazy Loading e Storage)
@@ -74,10 +86,29 @@ def chunk_text(text, size=CHUNK_SIZE, overlap=CHUNK_OVERLAP):
         chunks.append(text[start:end])
         start += size - overlap
     return [c.strip() for c in chunks if c.strip()]
+
+
+def log_tool_call(func):
+    """Loga início, duração e tamanho do resultado de cada chamada de tool."""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        start = time.monotonic()
+        logger.info("tool=%s chamada kwargs=%s", func.__name__, kwargs or dict(zip(func.__code__.co_varnames, args)))
+        try:
+            result = func(*args, **kwargs)
+            duration_ms = (time.monotonic() - start) * 1000
+            logger.info("tool=%s concluida em %.1fms (%d chars retornados)", func.__name__, duration_ms, len(result))
+            return result
+        except Exception:
+            duration_ms = (time.monotonic() - start) * 1000
+            logger.exception("tool=%s falhou apos %.1fms", func.__name__, duration_ms)
+            raise
+    return wrapper
 # endregion
 
 # region [4] Ferramentas MCP (RAG em PDFs)
 @mcp.tool()
+@log_tool_call
 def add_pdf(path: str) -> str:
     """Processa e indexa um arquivo PDF local."""
     pdf_path = Path(path).expanduser().resolve()
@@ -120,6 +151,7 @@ def add_pdf(path: str) -> str:
 
 
 @mcp.tool()
+@log_tool_call
 def search_pdfs(query: str, top_k: int = 5) -> str:
     """Realiza busca semântica nos PDFs indexados."""
     chunks, embeddings = load_index()
@@ -144,6 +176,7 @@ def search_pdfs(query: str, top_k: int = 5) -> str:
 
 
 @mcp.tool()
+@log_tool_call
 def list_documents() -> str:
     """Lista todos os documentos PDF cadastrados."""
     chunks, _ = load_index()
@@ -158,6 +191,7 @@ def list_documents() -> str:
 
 # region [5] Ferramentas MCP (SQL / SQLite)
 @mcp.tool()
+@log_tool_call
 def list_database_schema() -> str:
     """
     Lista todas as tabelas e VIEWS disponíveis no banco de dados seguros.db,
@@ -199,6 +233,7 @@ def list_database_schema() -> str:
 
 
 @mcp.tool()
+@log_tool_call
 def run_sql_query(query: str) -> str:
     """
     Executa uma consulta SQL (SELECT) de leitura no banco seguros.db.
